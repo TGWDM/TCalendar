@@ -1,5 +1,6 @@
 {
   "expo": {
+    "scheme": "your-app-scheme",
     "name": "TCalendar",
     "slug": "TCalendar",
     "version": "1.0.0",
@@ -23,7 +24,11 @@
       "edgeToEdgeEnabled": true
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
