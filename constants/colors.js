@@ -10,7 +10,7 @@ export const Colors = {
     iconColor: "#9591a5",
     iconColorFocused: "#fff",
     uiBackground: "#2f2b3d",
-    modalBackground: "rgba(30, 15, 74, 0.5)",
+    modalBackground: "rgba(49, 16, 67, 0.51)",
   },
   light: {
     text: "#625f72",

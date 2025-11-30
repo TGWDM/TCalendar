@@ -1,16 +1,19 @@
-import { Pressable, StyleSheet, useColorScheme, View, Modal, Platform } from 'react-native'
+import { Pressable, StyleSheet, useColorScheme, View, Modal, Platform, TextInput } from 'react-native'
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors'
 import ThemedCard from './ThemedCard'
 import ThemedText from './ThemedText'
 import ThemedView from './ThemedView'
+import EventModal from './EventModal'
 import React, { useState } from 'react'
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 const MonthGrid = ({ style, days = 7, ...props }) => {
     const colorScheme = useColorScheme()
     const theme = Colors[colorScheme] ?? Colors.light
     const numOfRows = Math.ceil(days / 7);
     const [modalVisible, setModalVisible] = useState(false);
+    const [DatePickerVisible, setDatePickerVisible] = useState(false);
 
     const buildGrid = () => {
         let grid = [];
@@ -51,37 +54,58 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
             {...props}
         >
             {buildGrid()}
-            <Modal
+            <EventModal
                 animationType="fade"
                 transparent={true}
                 visible={modalVisible}
                 onRequestClose={() => {
                     setModalVisible(!modalVisible);
                 }}>
-                <View style={[
-                    styles.modalOverlay,
-                    Platform.OS === 'web' && styles.modalOverlayWeb // for web to cover entire screen
-                ]}>
-                    <View style={[
-                        styles.modalContent,
-                        Platform.OS === 'web' && styles.modalContentWeb, // for web to position above overlay
-                        { backgroundColor: theme.modalBackground }
-                    ]}>
-                        <View style={[styles.CellText,{ alignItems: 'center', justifyContent:"space-between", marginBottom: 20, flexDirection: 'row' }]}>
-                            <ThemedText style={styles.modalTitle}>Add Event</ThemedText>
-                            <Ionicons name="close" size={20} color={theme.text} />
-                        </View>
-
-                        <Pressable
-                            style={styles.closeButton}
-                            onPress={() => setModalVisible(false)}
-                        >
-                            <ThemedText style={styles.closeButtonText}>Close</ThemedText>
-                        </Pressable>
+                <View style={styles.modalTitleContainer}>
+                    <View style={{ flex: 1 }} />
+                    {/* Modal Title */}
+                    <ThemedText style={styles.modalTitle}>Add Event</ThemedText>
+                    <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                        <Ionicons name="close"
+                            size={25}
+                            color={theme.text}
+                            onPress={() => setModalVisible(false)} />
                     </View>
                 </View>
-            </Modal>
-        </ThemedView>
+
+                {/* Modal content*/}
+                <View style={styles.modalBodyContainer}>
+                    {/* Splitting view into labels on the left and inputs on the right using styles */}
+                    {/* Add your form inputs here */}
+                    <View style={styles.fieldRow}>
+                        <ThemedText style={styles.fieldLabel}>Event Name:</ThemedText>
+                        <TextInput style={[styles.modalBodyTextInput, { flex: 1 }]} />
+                    </View>
+                    <View style={styles.fieldRow}>
+                        <ThemedText style={styles.fieldLabel}>Event Date:</ThemedText>
+                        <View style={styles.fieldControlRow}>
+                            <Pressable
+                                style={styles.selectDateButton}
+                                onPress={() => setDatePickerVisible(true)}>
+                                <ThemedText style={styles.selectDateText}>Select Date</ThemedText>
+                            </Pressable>
+
+                            {DatePickerVisible && (
+                                <DateTimePicker
+                                    mode="date"
+                                    display="default"
+                                    value={new Date()}
+                                    onChange={(event: DateTimePickerEvent, selectedDate?: Date) => {
+                                        setDatePickerVisible(false);
+                                        // handle selectedDate
+                                    }}
+                                />
+                            )}
+                        </View>
+                    </View>
+                </View>
+            </EventModal>
+        </ThemedView >
     )
 }
 
@@ -109,21 +133,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     // Modal Styles
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    modalOverlayWeb: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 1000,
-    },
     modalContent: {
         borderRadius: 12,
         padding: 24,
@@ -136,10 +145,66 @@ const styles = StyleSheet.create({
         position: 'relative',
         zIndex: 1001,
     },
+    modalTitleContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
+        marginBottom: 16,
+    },
     modalTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        marginBottom: 16,
+    },
+    modalBodyContainer: {
+        flex: 1,
+        flexDirection: 'column',
+        width: '100%',
+        justifyContent: 'flex-start',
+        paddingHorizontal: 30,
+    },
+    fieldRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        marginBottom: 12,
+    },
+    fieldLabel: {
+        width: 110,         
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    fieldControlRow: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        gap: 8,
+    },
+    selectDateButton: {
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        backgroundColor: '#b3b1b1b7',
+        borderWidth: 1,
+        borderColor: '#000',
+        borderRadius: 6,
+    },
+    selectDateText: {
+        fontSize: 14,
+    },
+    modalBodyText: {
+        fontSize: 16,
+        textAlign: 'center',
+        fontWeight: "bold",
+        marginBottom: 40,
+        paddingTop: 8,
+    },
+    modalBodyTextInput: {
+        height: 40,
+        paddingHorizontal: 10,
+        borderWidth: 1,
+        borderColor: '#000000ff',
+        backgroundColor: '#b3b1b1b7',
     },
     closeButton: {
         backgroundColor: '#FF3B30',

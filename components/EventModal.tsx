@@ -1,82 +1,78 @@
-import React, {useState} from 'react';
-import {Alert, Modal, StyleSheet, Text, Pressable, View} from 'react-native';
-import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
+import { StyleSheet, Text, View, Modal, Platform, useColorScheme } from 'react-native'
+import React, { useState } from 'react'
+import { Colors } from '../constants/colors'
 
-const EventModal = () => {
-  const [modalVisible, setModalVisible] = useState(false);
-  return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.centeredView}>
+const EventModal = (props) => {
+    const colorScheme = useColorScheme()
+    const theme = Colors[colorScheme] ?? Colors.light
+    const [modalVisible, setModalVisible] = useState(false);
+    return (
         <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            Alert.alert('Modal has been closed.');
-            setModalVisible(!modalVisible);
-          }}>
-          <View style={styles.centeredView}>
-            <View style={styles.modalView}>
-              <Text style={styles.modalText}>Hello World!</Text>
-              <Pressable
-                style={[styles.button, styles.buttonClose]}
-                onPress={() => setModalVisible(!modalVisible)}>
-                <Text style={styles.textStyle}>Hide Modal</Text>
-              </Pressable>
+        {...props}
+        >
+            <View style={[
+                styles.modalOverlay,
+                Platform.OS === 'web' && styles.modalOverlayWeb // for web to cover entire screen
+            ]}>
+                <View style={[
+                    styles.modalContent,
+                    Platform.OS === 'web' && styles.modalContentWeb, // for web to position above overlay
+                    { backgroundColor: theme.modalBackground }
+                ]}>
+                    {/* Add in children to allow flexible content */}
+                    {props.children}
+                </View>
             </View>
-          </View>
         </Modal>
-        <Pressable
-          style={[styles.button, styles.buttonOpen]}
-          onPress={() => setModalVisible(true)}>
-          <Text style={styles.textStyle}>Show Modal</Text>
-        </Pressable>
-      </SafeAreaView>
-    </SafeAreaProvider>
-  );
-};
+    )
+}
+
+export default EventModal
 
 const styles = StyleSheet.create({
-  centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.67)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  button: {
-    borderRadius: 20,
-    padding: 10,
-    elevation: 2,
-  },
-  buttonOpen: {
-    backgroundColor: '#F194FF',
-  },
-  buttonClose: {
-    backgroundColor: '#2196F3',
-  },
-  textStyle: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  modalText: {
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-});
-
-export default EventModal;
+    modalOverlayWeb: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 1000,
+    },
+    modalContent: {
+        borderRadius: 12,
+        padding: 24,
+        width: '100%',
+        maxWidth: 400,
+        minHeight: 400,
+        alignItems: 'center',
+    },
+    modalContentWeb: {
+        position: 'relative',
+        zIndex: 1001,
+    },
+    modalTitleContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%',
+        marginBottom: 16,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    modalContentContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        width: '100%',
+        justifyContent: 'center',
+        paddingHorizontal: 30,
+    }
+})
