@@ -97,7 +97,7 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                                     value={new Date()}
                                     onChange={(event: DateTimePickerEvent, selectedDate?: Date) => {
                                         setDatePickerVisible(false);
-                                        // handle selectedDate
+                                         // handle selectedDate
                                     }}
                                 />
                             )}
