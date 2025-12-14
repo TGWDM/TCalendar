@@ -5,6 +5,7 @@ import ThemedCard from './ThemedCard'
 import ThemedText from './ThemedText'
 import ThemedView from './ThemedView'
 import EventModal from './EventModal'
+import SaveButton from './SaveButton'
 import React, { useState } from 'react'
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
@@ -124,7 +125,7 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                                     value={calEvent.date.toISOString().split('T')[0]} // bind to event date state
                                     // update event date with user selection
                                     onChange={(e) => setCalEvent({ ...calEvent, date: new Date(e.target.value) })}
-                                /> 
+                                />
                             ) : (
                                 <Pressable
                                     style={styles.selectDateButton}
@@ -142,7 +143,7 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                                 <input
                                     type="time"
                                     style={styles.modalBodyTextInput}
-                                    value={calEvent.time.toISOString().split('T')[1].substring(0,5)} // bind to event time state
+                                    value={calEvent.time.toISOString().split('T')[1].substring(0, 5)} // bind to event time state
                                     // update event time with user selection
                                     onChange={(e) => {
                                         const [hours, minutes] = e.target.value.split(':'); // extract hours and minutes
@@ -161,12 +162,11 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                             )}
                         </View>
                     </View>
-                    <Pressable
-                        style={styles.saveButton}
+                    <SaveButton
+                        text="Save Event"
                         onPress={() => console.log('Event saved: ', calEvent)}
-                    >
-                        <ThemedText style={styles.saveButtonText}>Save Event </ThemedText>
-                    </Pressable>
+                        enabled={!!calEvent.name?.trim()} // enable only if event name is not empty trim is avoids space only names
+                    />
                 </View>
             </EventModal>
 
@@ -278,18 +278,5 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#000000ff',
         backgroundColor: '#b3b1b1b7',
-    },
-    saveButton: {
-        backgroundColor: '#FF3B30',
-        padding: 12,
-        borderRadius: 8,
-        width: '50%',
-        alignItems: 'center',
-        justifyContent: "center",
-        alignSelf: "center"
-    },
-    saveButtonText: {
-        color: 'white',
-        fontWeight: 'bold',
     },
 })

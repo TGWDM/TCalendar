@@ -3,7 +3,7 @@
 - [x] Add submission button
   - [x] Make it go to console for now
   - [ ] Fix so only date and time are saved to there respective vars.
-  - [ ] Add empty validation for event Name.
+  - [x] Add empty validation for event Name.
   - [ ] Add event details input.
 - [ ] Add monthly carousel 
 
