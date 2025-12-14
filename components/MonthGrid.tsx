@@ -9,11 +9,34 @@ import React, { useState } from 'react'
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
 const MonthGrid = ({ style, days = 7, ...props }) => {
-    const colorScheme = useColorScheme()
-    const theme = Colors[colorScheme] ?? Colors.light
-    const numOfRows = Math.ceil(days / 7);
-    const [modalVisible, setModalVisible] = useState(false);
-    const [DatePickerVisible, setDatePickerVisible] = useState(false);
+    const colorScheme = useColorScheme() // get current color scheme
+    const theme = Colors[colorScheme] ?? Colors.dark // select theme colors
+    const numOfRows = Math.ceil(days / 7); // calculate number of weeks needed
+    const [modalVisible, setModalVisible] = useState(false); // control modal visibility
+    const [datePickerVisible, setDatePickerVisible] = useState(false);// controls native date picker visibility
+    const [selectedDate, setSelectedDate] = useState(new Date());// default to current date
+    const [selectedTime, setSelectedTime] = useState(new Date());// default to current time
+    const [calEvent, setCalEvent] = useState({
+        name: '',
+        date: selectedDate,
+        time: selectedTime,
+    }); // store event details
+
+    const handleDateChange = (event, date) => {
+        // Native mobile behavior
+        if (Platform.OS !== "web") {
+            if (event.type === "set" && date) {
+                setSelectedDate(date);
+            }
+            setDatePickerVisible(false);
+        }
+    };
+
+    const webTextInputFix = {
+        //Fix for web TextInput to remove default blue outline on focus
+        outlineStyle: 'none',
+        boxShadow: 'none',
+    } as any;
 
     const buildGrid = () => {
         let grid = [];
@@ -75,36 +98,86 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
 
                 {/* Modal content*/}
                 <View style={styles.modalBodyContainer}>
-                    {/* Splitting view into labels on the left and inputs on the right using styles */}
-                    {/* Add your form inputs here */}
-                    <View style={styles.fieldRow}>
-                        <ThemedText style={styles.fieldLabel}>Event Name:</ThemedText>
-                        <TextInput style={[styles.modalBodyTextInput, { flex: 1 }]} />
-                    </View>
-                    <View style={styles.fieldRow}>
-                        <ThemedText style={styles.fieldLabel}>Event Date:</ThemedText>
-                        <View style={styles.fieldControlRow}>
-                            <Pressable
-                                style={styles.selectDateButton}
-                                onPress={() => setDatePickerVisible(true)}>
-                                <ThemedText style={styles.selectDateText}>Select Date</ThemedText>
-                            </Pressable>
+                    <View>
+                        {/* Splitting view into labels on the left and inputs on the right using styles */}
+                        {/* Add your form inputs here */}
+                        <View style={styles.fieldRow}>
+                            <ThemedText style={styles.fieldLabel}>Event Name:</ThemedText>
+                            <TextInput
+                                style={[
+                                    styles.modalBodyTextInput,
+                                    Platform.OS === 'web' && webTextInputFix, // use the web-specific style here
+                                ]}
+                                value={calEvent.name} // bind to event name state
+                                onChangeText={(text) => setCalEvent({ ...calEvent, name: text })} // update event name
+                                selectionColor="transparent"
+                            />
+                        </View>
 
-                            {DatePickerVisible && (
-                                <DateTimePicker
-                                    mode="date"
-                                    display="default"
-                                    value={new Date()}
-                                    onChange={(event: DateTimePickerEvent, selectedDate?: Date) => {
-                                        setDatePickerVisible(false);
-                                         // handle selectedDate
+                        {/* Date picker for web */}
+                        <View style={styles.fieldRow}>
+                            <ThemedText style={styles.fieldLabel}>Event Date:</ThemedText>
+                            {Platform.OS === 'web' ? (
+                                <input
+                                    type="date"
+                                    style={styles.modalBodyTextInput}
+                                    value={calEvent.date.toISOString().split('T')[0]} // bind to event date state
+                                    // update event date with user selection
+                                    onChange={(e) => setCalEvent({ ...calEvent, date: new Date(e.target.value) })}
+                                /> 
+                            ) : (
+                                <Pressable
+                                    style={styles.selectDateButton}
+                                    onPress={() => setDatePickerVisible(true)}
+                                >
+                                    <ThemedText style={styles.selectDateText}>Select Date</ThemedText>
+                                </Pressable>
+                            )}
+                        </View>
+
+                        {/* Time picker for web */}
+                        <View style={styles.fieldRow}>
+                            <ThemedText style={styles.fieldLabel}>Event Time:</ThemedText>
+                            {Platform.OS === 'web' ? (
+                                <input
+                                    type="time"
+                                    style={styles.modalBodyTextInput}
+                                    value={calEvent.time.toISOString().split('T')[1].substring(0,5)} // bind to event time state
+                                    // update event time with user selection
+                                    onChange={(e) => {
+                                        const [hours, minutes] = e.target.value.split(':'); // extract hours and minutes
+                                        const updatedTime = new Date(calEvent.time); // create a copy of the current time
+                                        updatedTime.setHours(parseInt(hours), parseInt(minutes));// set new hours and minutes
+                                        setCalEvent({ ...calEvent, time: updatedTime }); // update event time state
                                     }}
                                 />
+                            ) : (
+                                <Pressable
+                                    style={styles.selectDateButton}
+                                    onPress={() => setDatePickerVisible(true)}
+                                >
+                                    <ThemedText style={styles.selectDateText}>Select Time</ThemedText>
+                                </Pressable>
                             )}
                         </View>
                     </View>
+                    <Pressable
+                        style={styles.saveButton}
+                        onPress={() => console.log('Event saved: ', calEvent)}
+                    >
+                        <ThemedText style={styles.saveButtonText}>Save Event </ThemedText>
+                    </Pressable>
                 </View>
             </EventModal>
+
+            {datePickerVisible && Platform.OS !== "web" && (
+                <DateTimePicker
+                    mode="date"
+                    display="default"
+                    value={selectedDate}
+                    onChange={handleDateChange}
+                />
+            )}
         </ThemedView >
     )
 }
@@ -160,7 +233,7 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'column',
         width: '100%',
-        justifyContent: 'flex-start',
+        justifyContent: 'space-between',
         paddingHorizontal: 30,
     },
     fieldRow: {
@@ -170,7 +243,7 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     fieldLabel: {
-        width: 110,         
+        width: 110,
         fontSize: 16,
         fontWeight: 'bold',
     },
@@ -206,16 +279,16 @@ const styles = StyleSheet.create({
         borderColor: '#000000ff',
         backgroundColor: '#b3b1b1b7',
     },
-    closeButton: {
+    saveButton: {
         backgroundColor: '#FF3B30',
         padding: 12,
         borderRadius: 8,
         width: '50%',
         alignItems: 'center',
-        position: 'absolute',
-        bottom: 20,
+        justifyContent: "center",
+        alignSelf: "center"
     },
-    closeButtonText: {
+    saveButtonText: {
         color: 'white',
         fontWeight: 'bold',
     },

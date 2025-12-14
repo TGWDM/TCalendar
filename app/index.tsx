@@ -13,9 +13,9 @@ let daysInMonth = 0;
 if (date.getMonth() === 1) {
     daysInMonth = 28
 } else if (date.getMonth() % 2 === 0) {
-    daysInMonth = 31
-} else {
     daysInMonth = 30
+} else {
+    daysInMonth = 31
 }
 
 
