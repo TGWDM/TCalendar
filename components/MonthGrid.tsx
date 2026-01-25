@@ -142,7 +142,7 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                             {Platform.OS === 'web' ? (
                                 <input
                                     type="time"
-                                    style={styles.modalBodyTextInput}
+                                    style={styles.modalBodyTextInput} 
                                     value={calEvent.time.toISOString().split('T')[1].substring(0, 5)} // bind to event time state
                                     // update event time with user selection
                                     onChange={(e) => {
