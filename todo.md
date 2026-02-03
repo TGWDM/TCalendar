@@ -4,7 +4,8 @@
   - [x] Make it go to console for now
   - [x] Add empty validation for event Name.
 - [ ] When event added allow that event to be reopened on calendar
-- [ ] Link date of event to calendar cell. (Do this next)
+- [x] Link date of event to calendar cell.
+  - [ ] Need to dynamically set month based on open grid once added monthly carousel.
   - See if you can get the date by using each cells number and the month number
   - Might need to convert to int or right a function to do this.
 - [ ]  

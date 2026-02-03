@@ -9,6 +9,19 @@ import SaveButton from './SaveButton'
 import React, { useState } from 'react'
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 
+// Get current month index (0-11)
+const date = new Date()
+const currentMonth = date.getMonth() + 1; // +1 to convert to 1-12
+const currentYear = date.getFullYear();
+
+// function for formating date to YYYY-MM-DD
+const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(currentMonth).padStart(2, '0'); // Months are zero-based
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 const MonthGrid = ({ style, days = 7, ...props }) => {
     const colorScheme = useColorScheme() // get current color scheme
     const theme = Colors[colorScheme] ?? Colors.dark // select theme colors
@@ -45,11 +58,12 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
             let rowItems = [];
             for (let col = 0; col < 7; col++) { // for each day in the week
                 const dayIndex = row * 7 + col;
+                const dayAfterIndex = dayIndex + 1;
                 if (dayIndex < days) {
                     rowItems.push( // add day card
                         <ThemedCard style={styles.GridCell} key={dayIndex}>
                             <View>
-                                <ThemedText style={styles.CellText}>{dayIndex + 1}</ThemedText>
+                                <ThemedText style={styles.CellText}>{dayAfterIndex}</ThemedText>
                             </View>
                             <ThemedView style={{ position: 'absolute', bottom: 5 }} >
                                 <Pressable onPress={() => {
@@ -122,9 +136,12 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                                 <input
                                     type="date"
                                     style={styles.modalBodyTextInput}
-                                    value={calEvent.date.toISOString().split('T')[0]} // bind to event date state
-                                    // update event date with user selection
-                                    onChange={(e) => setCalEvent({ ...calEvent, date: new Date(e.target.value) })}
+                                    value={formatDate(calEvent.date)}// bind to event date using selected cell
+                                    onChange={(e) => {
+                                        const [y, m, d] = e.target.value.split('-').map(Number); // extract year, month, day 
+                                        setCalEvent(prev => ({ ...prev, date: new Date(y, m - 1, d) })); // update event date state
+                                        setSelectedDate(new Date(y, m - 1, d)); // also update selected date state
+                                    }}
                                 />
                             ) : (
                                 <Pressable
@@ -142,7 +159,7 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                             {Platform.OS === 'web' ? (
                                 <input
                                     type="time"
-                                    style={styles.modalBodyTextInput} 
+                                    style={styles.modalBodyTextInput}
                                     value={calEvent.time.toISOString().split('T')[1].substring(0, 5)} // bind to event time state
                                     // update event time with user selection
                                     onChange={(e) => {
