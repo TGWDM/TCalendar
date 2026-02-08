@@ -9,8 +9,6 @@ interface SaveButtonProps { // Define props interface for save button
 }
 
 const SaveButton = ({ onPress, text = "Save", enabled = true }: SaveButtonProps) => {
-    // Debug log
-    console.log('SaveButton rendered with enabled:', enabled);  
     return (
         <Pressable
             style={[enabled ? styles.saveButtonOn : styles.saveButtonOff]} // Change style based on enabled prop

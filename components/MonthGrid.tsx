@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, useColorScheme, View, Modal, Platform, TextInput } from 'react-native'
+import { Pressable, StyleSheet, useColorScheme, View, Dimensions, Platform, TextInput } from 'react-native'
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/colors'
 import ThemedCard from './ThemedCard'
@@ -46,6 +46,15 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
         }
     };
 
+    /*function to calculate the width/height of the grid cells so they even fill the parent container.*/
+    const calculateCellDimensions = () => {
+        const screenWidth = Dimensions.get('window').width;
+        const screenHeight = Dimensions.get('window').height;
+        const cellWidth = screenWidth / 7;
+        const cellHeight = screenHeight / numOfRows;
+        return { cellWidth, cellHeight };
+    };
+
     const webTextInputFix = {
         //Fix for web TextInput to remove default blue outline on focus
         outlineStyle: 'none',
@@ -53,6 +62,7 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
     } as any;
 
     const buildGrid = () => {
+        let { dynamicCellWidth, dynamicCellHeight } = calculateCellDimensions();
         let grid = [];
         for (let row = 0; row < numOfRows; row++) { // for each week
             let rowItems = [];
@@ -61,7 +71,9 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                 const dayAfterIndex = dayIndex + 1;
                 if (dayIndex < days) {
                     rowItems.push( // add day card
-                        <ThemedCard style={styles.GridCell} key={dayIndex}>
+                        <ThemedCard 
+                        style={styles.GridCell}
+                        key={dayIndex}>
                             <View>
                                 <ThemedText style={styles.CellText}>{dayAfterIndex}</ThemedText>
                             </View>
@@ -178,6 +190,18 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                                 </Pressable>
                             )}
                         </View>
+                        <View style={styles.fieldRow}>
+                            <ThemedText style={styles.fieldLabel}>Event Details:</ThemedText>
+                            <TextInput
+                                style={[
+                                    styles.modalDetailsInput,
+                                    Platform.OS === 'web' && webTextInputFix, // use the web-specific style here
+                                ]}
+                                value={calEvent.name} // bind to event name state
+                                onChangeText={(text) => setCalEvent({ ...calEvent, name: text })} // update event name
+                                selectionColor="transparent"
+                            />
+                        </View>
                     </View>
                     <SaveButton
                         text="Save Event"
@@ -187,7 +211,7 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                 </View>
             </EventModal>
 
-            {datePickerVisible && Platform.OS !== "web" && (
+            {datePickerVisible && Platform.OS === "android" && (
                 <DateTimePicker
                     mode="date"
                     display="default"
@@ -296,5 +320,14 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#000000ff',
         backgroundColor: '#b3b1b1b7',
+    },
+    modalDetailsInput: {
+        height: 80,
+        width: '70%',
+        paddingHorizontal: 10,
+        borderWidth: 1,
+        borderColor: '#000000ff',
+        backgroundColor: '#b3b1b1b7',
+        textAlignVertical: 'top'
     },
 })

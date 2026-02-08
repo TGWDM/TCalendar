@@ -16,7 +16,7 @@ export default function RootLayout() {
         headerTitleAlign: "center",
       }}>
         {/* Groups */}
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        {/* <Stack.Screen name="(auth)" options={{ headerShown: false }} />*./}
 
         {/* Individual Screens */}
         <Stack.Screen name="index" options={{ title: "TCalendar" }} />
