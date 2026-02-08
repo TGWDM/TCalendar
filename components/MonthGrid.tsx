@@ -22,7 +22,7 @@ const formatDate = (date) => {
     return `${year}-${month}-${day}`;
 }
 
-const MonthGrid = ({ style, days = 7, openMonth, ...props }) => {
+const MonthGrid = ({ style, days = 7, ...props }) => {
     const colorScheme = useColorScheme() // get current color scheme
     const theme = Colors[colorScheme] ?? Colors.dark // select theme colors
     const numOfRows = Math.ceil(days / 7); // calculate number of weeks needed
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     },
     GridCell: {
         height: 90,
-        width: 90,
+        width: 70,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
@@ -291,6 +291,7 @@ const styles = StyleSheet.create({
     },
     modalBodyTextInput: {
         height: 40,
+        width: '70%',
         paddingHorizontal: 10,
         borderWidth: 1,
         borderColor: '#000000ff',

@@ -3,12 +3,15 @@
 - [x] Add submission button
   - [x] Make it go to console for now
   - [x] Add empty validation for event Name.
-- [ ] When event added allow that event to be reopened on calendar
 - [x] Link date of event to calendar cell.
-  - [ ] Need to dynamically set month based on open grid once added monthly carousel.
-    - Might need to convert to int or right a function to do this.
-- [ ] Add event details input.
-- [ ] Add monthly carousel 
+  - [x] Need to dynamically set month based on open grid once added monthly carousel.
+- [x] Add monthly carousel 
+- [ ] When event added allow that event to be reopened on calendar
+- [ ] Add in views hamburger menu.
+- [ ] Add input for event details.
+- [ ] Add in different views (Week, Month, Year)
+- [ ] See if we can fix web view
+- [ ] 
 
 ## Long Term
 - [ ] Setup events db
