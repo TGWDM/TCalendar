@@ -1,4 +1,4 @@
-import { StyleSheet, Modal } from 'react-native'
+import { StyleSheet, Modal, View } from 'react-native'
 import React, { useState } from 'react'
 import ThemedView from "../components/ThemedView"
 import ThemedText from '../components/ThemedText'
@@ -22,8 +22,12 @@ if (date.getMonth() === 1) {
 const Home = () => {
     return (
         <ThemedView style={styles.root}>
-                <ThemedText style={styles.title}>Current month is: {currentMonth}</ThemedText>
-                <MonthGrid style={{ marginTop: 10 }} days={daysInMonth} />
+            <View style={styles.MonthCarousel}>
+                <View style={styles.Month}>
+                    <ThemedText style={styles.title}>Current month is: {currentMonth}</ThemedText>
+                    <MonthGrid style={{ marginTop: 10 }} days={daysInMonth} openMonth={date.getMonth()} />
+                </View>
+            </View>
         </ThemedView>
     )
 }
@@ -41,4 +45,15 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 18,
     },
+    MonthCarousel: {
+        display: 'flex',
+        overflow: 'hidden',
+        backgroundColor: 'transparent'
+    },
+    Month: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    }
+
 })

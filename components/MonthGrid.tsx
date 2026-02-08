@@ -14,7 +14,7 @@ const date = new Date()
 const currentMonth = date.getMonth() + 1; // +1 to convert to 1-12
 const currentYear = date.getFullYear();
 
-// function for formating date to YYYY-MM-DD
+// function for formatting date to YYYY-MM-DD
 const formatDate = (date) => {
     const year = date.getFullYear();
     const month = String(currentMonth).padStart(2, '0'); // Months are zero-based
@@ -22,7 +22,7 @@ const formatDate = (date) => {
     return `${year}-${month}-${day}`;
 }
 
-const MonthGrid = ({ style, days = 7, ...props }) => {
+const MonthGrid = ({ style, days = 7, openMonth, ...props }) => {
     const colorScheme = useColorScheme() // get current color scheme
     const theme = Colors[colorScheme] ?? Colors.dark // select theme colors
     const numOfRows = Math.ceil(days / 7); // calculate number of weeks needed
@@ -181,7 +181,7 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                     </View>
                     <SaveButton
                         text="Save Event"
-                        onPress={() => console.log('Event saved: ', calEvent)}
+                        onPress={() => console.log('Event saved: ', calEvent)} // replace with actual save logic
                         enabled={!!calEvent.name?.trim()} // enable only if event name is not empty trim is avoids space only names
                     />
                 </View>
