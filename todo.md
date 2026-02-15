@@ -13,6 +13,7 @@
 - [ ] Add in different views (Week, Month, Year)
 - [ ] See if we can fix web view
 - [ ] split Cells evenly using screen size (dimensions)
+- [ ] Alter the database to include event_time
 
 ## Long Term
 - [ ] Setup events db

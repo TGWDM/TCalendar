@@ -48,8 +48,6 @@ export async function addEvent(title: string, eventDate: string, eventTime: stri
         INSERT INTO events (title, event_date, event_time, description)
         VALUES (?, ?, ?, ?);
     `, [title, eventDate, eventTime, description]);
-    // Close the database connection
-    await db.closeAsync();
 }
 
 const MonthGrid = ({ style, days = 7, ...props }) => {
@@ -228,8 +226,9 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                                     styles.modalDetailsInput,
                                     Platform.OS === 'web' && webTextInputFix, // use the web-specific style here
                                 ]}
-                                value={calEvent.name} // bind to event name state
-                                onChangeText={(text) => setCalEvent({ ...calEvent, name: text })} // update event name
+                                value={calEvent.description} // bind to event name state
+                                onChangeText={(text) => setCalEvent({ ...calEvent, description: text })} // update event description
+                                multiline={true}
                                 selectionColor="transparent"
                             />
                         </View>
