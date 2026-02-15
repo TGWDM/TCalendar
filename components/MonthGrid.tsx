@@ -8,6 +8,7 @@ import EventModal from './EventModal'
 import SaveButton from './SaveButton'
 import React, { useState } from 'react'
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import * as SQLite from 'expo-sqlite';
 
 // Get current month index (0-11)
 const date = new Date()
@@ -22,6 +23,35 @@ const formatDate = (date) => {
     return `${year}-${month}-${day}`;
 }
 
+async function setupDatabase() {
+    // Open or create the database
+    const db = await SQLite.openDatabaseAsync('events.db');
+    // Create the events table if it doesn't exist
+    await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            event_date DATE NOT NULL,
+            event_time TIME NOT NULL,
+            description TEXT
+        );
+    `);
+    return db;
+}
+
+// Function to add an event to the database
+export async function addEvent(title: string, eventDate: string, eventTime: string,  description: string) {
+    // Get the database connection
+    const db = await setupDatabase();
+    // Insert the event into the database
+    await db.runAsync(`
+        INSERT INTO events (title, event_date, event_time, description)
+        VALUES (?, ?, ?, ?);
+    `, [title, eventDate, eventTime, description]);
+    // Close the database connection
+    await db.closeAsync();
+}
+
 const MonthGrid = ({ style, days = 7, ...props }) => {
     const colorScheme = useColorScheme() // get current color scheme
     const theme = Colors[colorScheme] ?? Colors.dark // select theme colors
@@ -34,6 +64,7 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
         name: '',
         date: selectedDate,
         time: selectedTime,
+        description: '',
     }); // store event details
 
     const handleDateChange = (event, date) => {
@@ -205,7 +236,16 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                     </View>
                     <SaveButton
                         text="Save Event"
-                        onPress={() => console.log('Event saved: ', calEvent)} // replace with actual save logic
+                         // onPress should save the event to the database and close the modal
+                        onPress={() => {
+                            addEvent(
+                                calEvent.name,
+                                formatDate(calEvent.date),
+                                calEvent.time.toTimeString().split(' ')[0], // format time as HH:MM:SS
+                                calEvent.description || '' // use description if available, otherwise empty string
+                            );
+                            setModalVisible(false);
+                        }}
                         enabled={!!calEvent.name?.trim()} // enable only if event name is not empty trim is avoids space only names
                     />
                 </View>
