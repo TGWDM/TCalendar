@@ -18,7 +18,7 @@ const currentYear = date.getFullYear();
 // function for formatting date to YYYY-MM-DD
 const formatDate = (date) => {
     const year = date.getFullYear();
-    const month = String(currentMonth).padStart(2, '0'); // Months are zero-based
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
@@ -40,14 +40,19 @@ async function setupDatabase() {
 }
 
 // Function to add an event to the database
-export async function addEvent(title: string, eventDate: string, eventTime: string,  description: string) {
+export async function addEvent(title: string, eventDate: string, eventTime: string, description: string) {
     // Get the database connection
     const db = await setupDatabase();
     // Insert the event into the database
-    await db.runAsync(`
+    const result = await db.runAsync(`
         INSERT INTO events (title, event_date, event_time, description)
         VALUES (?, ?, ?, ?);
     `, [title, eventDate, eventTime, description]);
+    // Console log to confirm event was added
+    console.log("Event added with ID:", result.lastInsertRowId);
+    // Close the database connection
+    await db.closeAsync();
+
 }
 
 const MonthGrid = ({ style, days = 7, ...props }) => {
@@ -56,6 +61,7 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
     const numOfRows = Math.ceil(days / 7); // calculate number of weeks needed
     const [modalVisible, setModalVisible] = useState(false); // control modal visibility
     const [datePickerVisible, setDatePickerVisible] = useState(false);// controls native date picker visibility
+    const [androidPickerMode, setAndroidPickerMode] = useState<"date" | "time">("date"); // controls whether Android date or time picker is shown
     const [selectedDate, setSelectedDate] = useState(new Date());// default to current date
     const [selectedTime, setSelectedTime] = useState(new Date());// default to current time
     const [calEvent, setCalEvent] = useState({
@@ -65,13 +71,55 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
         description: '',
     }); // store event details
 
+    // Handle date or time selection for native picker
+    const showDatePicker = (mode) => {
+        setAndroidPickerMode(mode);
+        setDatePickerVisible(true);
+    };
+
+    // handler for when events are saved in the modal
+    const handleSaveEvent = async () => {
+        try {
+            // 1. Format your strings
+            const dateStr = formatDate(calEvent.date);
+            const timeStr = calEvent.time.toTimeString().split(' ')[0];
+
+            // 2. Wait for the database to finish
+            await addEvent(
+                calEvent.name,
+                dateStr,
+                timeStr,
+                calEvent.description || ''
+            );
+
+            // 3. Only close the modal IF the save worked
+            setModalVisible(false);
+
+            // 4. Reset the form so the next event starts fresh
+            setCalEvent({ name: '', date: new Date(), time: new Date(), description: '' });
+
+        } catch (error) {
+            // If the DB fails, keep the modal open and show the error
+            console.error("Database Save Error:", error);
+            alert("Could not save event. Please try again.");
+        }
+    };
+
     const handleDateChange = (event, date) => {
-        // Native mobile behavior
         if (Platform.OS !== "web") {
+            setDatePickerVisible(false); // Close first to prevent double-pops
+
             if (event.type === "set" && date) {
-                setSelectedDate(date);
+                if (androidPickerMode === "date") {
+                    setSelectedDate(date);
+                    // Sync with calEvent
+                    setCalEvent(prev => ({ ...prev, date: date }));
+                } else {
+                    setSelectedTime(date);
+                    // Sync with calEvent
+                    setCalEvent(prev => ({ ...prev, time: date }));
+                }
             }
-            setDatePickerVisible(false);
         }
     };
 
@@ -100,9 +148,9 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                 const dayAfterIndex = dayIndex + 1;
                 if (dayIndex < days) {
                     rowItems.push( // add day card
-                        <ThemedCard 
-                        style={styles.GridCell}
-                        key={dayIndex}>
+                        <ThemedCard
+                            style={styles.GridCell}
+                            key={dayIndex}>
                             <View>
                                 <ThemedText style={styles.CellText}>{dayAfterIndex}</ThemedText>
                             </View>
@@ -187,7 +235,7 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                             ) : (
                                 <Pressable
                                     style={styles.selectDateButton}
-                                    onPress={() => setDatePickerVisible(true)}
+                                    onPress={() => showDatePicker("date")} // show date picker on mobile
                                 >
                                     <ThemedText style={styles.selectDateText}>Select Date</ThemedText>
                                 </Pressable>
@@ -213,7 +261,7 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                             ) : (
                                 <Pressable
                                     style={styles.selectDateButton}
-                                    onPress={() => setDatePickerVisible(true)}
+                                    onPress={() => showDatePicker("time")} // show time picker on mobile
                                 >
                                     <ThemedText style={styles.selectDateText}>Select Time</ThemedText>
                                 </Pressable>
@@ -235,27 +283,22 @@ const MonthGrid = ({ style, days = 7, ...props }) => {
                     </View>
                     <SaveButton
                         text="Save Event"
-                         // onPress should save the event to the database and close the modal
-                        onPress={() => {
-                            addEvent(
-                                calEvent.name,
-                                formatDate(calEvent.date),
-                                calEvent.time.toTimeString().split(' ')[0], // format time as HH:MM:SS
-                                calEvent.description || '' // use description if available, otherwise empty string
-                            );
-                            setModalVisible(false);
-                        }}
-                        enabled={!!calEvent.name?.trim()} // enable only if event name is not empty trim is avoids space only names
+                        onPress={handleSaveEvent} // call the save handler when pressed
+                        enabled={!!calEvent.name?.trim()}
                     />
+
                 </View>
             </EventModal>
 
+            {/* Show native date picker for mobile when datePickerVisible is true*/}
             {datePickerVisible && Platform.OS === "android" && (
+                // Android date picker
                 <DateTimePicker
-                    mode="date"
+                    mode={androidPickerMode} // use state to determine whether to show date or time picker
                     display="default"
                     value={selectedDate}
                     onChange={handleDateChange}
+                // Set button text to "Select Time" when picking time, otherwise "Select Date"
                 />
             )}
         </ThemedView >
